@@ -69,7 +69,7 @@ export default function WorkflowPage() {
       const flowNodes: Node[] = dagNodes.map((n, i) => ({
         id: n.id,
         type: 'agent',
-        position: { x: 180 + i * 240, y: 100 + (i % 2) * 130 },
+        position: n.position || { x: 180 + i * 240, y: 100 + (i % 2) * 130 },
         data: {
           label: n.label,
           icon: getStepIcon(n.step_type),
@@ -137,6 +137,7 @@ export default function WorkflowPage() {
       agent_id: (n.data as Record<string, unknown>).agentId as string,
       step_type: (n.data as Record<string, unknown>).stepType as DagNode['step_type'],
       label: (n.data as Record<string, unknown>).label as string,
+      position: { x: n.position.x, y: n.position.y },
     })),
     edges: edges.map((e) => ({
       from: e.source,

@@ -30,6 +30,7 @@ export interface DagNode {
   agent_id: string
   step_type: 'execute' | 'review' | 'discuss' | 'assign'
   label: string
+  position?: { x: number; y: number }
   review_targets?: string[]
   assign_to?: string[]
   discuss_with?: string
