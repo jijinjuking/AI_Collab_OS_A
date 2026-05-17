@@ -1,0 +1,260 @@
+.dashboard-page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.dashboard-header h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.auto-refresh-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  cursor: pointer;
+}
+
+.auto-refresh-toggle input {
+  accent-color: #3b82f6;
+}
+
+/* Error banner */
+.error-banner {
+  background: #451a03;
+  border: 1px solid #92400e;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.5rem;
+  color: #fbbf24;
+  font-size: 0.875rem;
+}
+
+/* Overall status */
+.status-overview {
+  margin-bottom: 1.5rem;
+}
+
+.overall-status {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-radius: 10px;
+  border: 1px solid #1e293b;
+  background: #0f172a;
+}
+
+.overall-status.status-healthy {
+  border-color: #065f46;
+}
+
+.overall-status.status-degraded {
+  border-color: #92400e;
+}
+
+.overall-status.status-unhealthy {
+  border-color: #991b1b;
+}
+
+.status-indicator {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.status-healthy .status-indicator {
+  background: #10b981;
+  box-shadow: 0 0 8px #10b981;
+}
+
+.status-degraded .status-indicator {
+  background: #f59e0b;
+  box-shadow: 0 0 8px #f59e0b;
+}
+
+.status-unhealthy .status-indicator {
+  background: #ef4444;
+  box-shadow: 0 0 8px #ef4444;
+}
+
+.status-info h2 {
+  font-size: 1.1rem;
+  color: #e2e8f0;
+  margin-bottom: 0.25rem;
+}
+
+.status-info p {
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.uptime {
+  margin-top: 0.25rem;
+  font-size: 0.8rem !important;
+  color: #64748b !important;
+}
+
+/* Checks */
+.checks-section {
+  margin-bottom: 1.5rem;
+}
+
+.checks-section h3,
+.metrics-section h3 {
+  font-size: 1rem;
+  color: #94a3b8;
+  margin-bottom: 0.75rem;
+  font-weight: 500;
+}
+
+.checks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.check-card {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.check-card.status-healthy {
+  border-color: #065f46;
+}
+
+.check-card.status-degraded {
+  border-color: #92400e;
+}
+
+.check-card.status-unhealthy {
+  border-color: #991b1b;
+}
+
+.check-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.check-name {
+  font-size: 0.9rem;
+  color: #e2e8f0;
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.check-status {
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.check-error {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  color: #fca5a5;
+  word-break: break-all;
+}
+
+/* Metrics */
+.metrics-section {
+  margin-bottom: 1.5rem;
+}
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.metric-card {
+  background: #0f172a;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 1.25rem;
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 0.25rem;
+}
+
+.metric-value.text-green {
+  color: #10b981;
+}
+
+.metric-value.text-red {
+  color: #ef4444;
+}
+
+.metric-label {
+  font-size: 0.8rem;
+  color: #64748b;
+}
+
+/* Rooms detail */
+.rooms-detail {
+  margin-top: 1rem;
+}
+
+.rooms-detail h4 {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-bottom: 0.5rem;
+}
+
+.rooms-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.rooms-table th {
+  background: #1e293b;
+  color: #94a3b8;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.rooms-table td {
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid #1e293b;
+  color: #cbd5e1;
+}
+
+.rooms-table code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.75rem;
+  color: #67e8f9;
+}
+
+/* Last updated */
+.last-updated {
+  text-align: right;
+  font-size: 0.75rem;
+  color: #475569;
+  margin-top: 1rem;
+}

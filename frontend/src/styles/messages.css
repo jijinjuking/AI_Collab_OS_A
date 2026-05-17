@@ -1,0 +1,119 @@
+/* Message panel styles */
+.message-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg-secondary);
+  border-left: 1px solid var(--border);
+}
+
+.message-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.message-panel-header h2 {
+  font-size: 0.9rem;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.msg-count {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+.message-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem;
+}
+
+.empty-messages {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text-secondary);
+}
+
+.empty-messages .hint {
+  font-size: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.message-item {
+  margin-bottom: 0.75rem;
+  padding: 0.75rem;
+  background: var(--bg-surface);
+  border-radius: 6px;
+  border-left: 3px solid var(--border);
+}
+
+.message-item.message-agent_message {
+  border-left-color: var(--accent);
+}
+
+.message-item.message-workflow_event {
+  border-left-color: var(--warning);
+}
+
+.message-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.message-icon {
+  font-size: 0.9rem;
+}
+
+.message-from {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.message-type-label {
+  font-size: 0.65rem;
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+}
+
+.message-time {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  margin-left: auto;
+}
+
+.message-content {
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.verdict-badge {
+  font-size: 0.65rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.verdict-pass {
+  background: rgba(166, 227, 161, 0.2);
+  color: var(--success);
+}
+
+.verdict-revise {
+  background: rgba(249, 226, 175, 0.2);
+  color: var(--warning);
+}

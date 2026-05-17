@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.venv_linux/
+venv/
+.env
+*.egg-info/
+
+# Node
+node_modules/
+dist/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data
+data/
+workspaces/
+*.db
+
+# Git
+.git/
+.gitignore
+
+

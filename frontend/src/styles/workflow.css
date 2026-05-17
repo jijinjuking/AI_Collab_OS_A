@@ -1,0 +1,188 @@
+/* Workflow page styles */
+.workflow-page {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
+.workflow-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+}
+
+.workflow-header h1 {
+  font-size: 1.1rem;
+  margin: 0;
+  color: var(--text-primary);
+  white-space: nowrap;
+}
+
+.workflow-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.workflow-name-input,
+.task-desc-input {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.4rem 0.75rem;
+  color: var(--text-primary);
+  font-size: 0.8rem;
+}
+
+.workflow-name-input { width: 150px; }
+.task-desc-input { flex: 1; min-width: 200px; }
+
+.workflow-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Agent palette sidebar */
+.agent-palette {
+  width: 200px;
+  background: var(--bg-secondary);
+  border-right: 1px solid var(--border);
+  padding: 1rem;
+  overflow-y: auto;
+}
+
+.agent-palette h3 {
+  font-size: 0.9rem;
+  margin: 0 0 0.25rem;
+  color: var(--text-primary);
+}
+
+.agent-palette h4 {
+  font-size: 0.8rem;
+  margin: 0.5rem 0 0.25rem;
+  color: var(--text-secondary);
+}
+
+.palette-hint {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin: 0 0 0.75rem;
+}
+
+.palette-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 0.25rem;
+  transition: background 0.15s;
+}
+
+.palette-item:hover {
+  background: var(--bg-hover);
+}
+
+.palette-icon { font-size: 1rem; }
+.palette-name {
+  font-size: 0.8rem;
+  color: var(--text-primary);
+  flex: 1;
+}
+.palette-role {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+}
+
+.palette-divider {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 0.75rem 0;
+}
+
+.step-type-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.step-type-buttons button {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0.4rem 0.5rem;
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.step-type-buttons button:hover {
+  border-color: var(--accent);
+}
+
+/* React Flow canvas */
+.workflow-canvas {
+  flex: 1;
+  background: var(--bg-primary);
+}
+
+/* Custom agent node */
+.agent-node {
+  background: var(--bg-surface);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  min-width: 140px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.agent-node-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.agent-node-icon { font-size: 1.1rem; }
+.agent-node-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.agent-node-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.agent-node-type {
+  font-size: 0.65rem;
+  font-weight: 500;
+}
+
+.agent-node-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+/* Chat page */
+.chat-page {
+  height: 100vh;
+}
