@@ -44,6 +44,14 @@ class WorkflowListOut(BaseModel):
     created_at: str
 
 
+class WorkflowUpdate(BaseModel):
+    """Update an existing workflow."""
+
+    name: str | None = None
+    dag_config: dict[str, Any] | None = None
+    mode: str | None = Field(default=None, pattern="^(auto|manual)$")
+
+
 class WorkflowStartRequest(BaseModel):
     """Start a workflow execution."""
 

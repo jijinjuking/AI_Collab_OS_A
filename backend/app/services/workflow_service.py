@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import ConflictError, NotFoundError
 from app.db.models.base import utcnow
 from app.db.models.workflow import Workflow
-from app.schemas.workflow import WorkflowCreate
+from app.schemas.workflow import WorkflowCreate, WorkflowUpdate
 
 
 class WorkflowService:
@@ -50,6 +50,20 @@ class WorkflowService:
         workflow = result.scalar_one_or_none()
         if not workflow:
             raise NotFoundError("Workflow")
+        return workflow
+
+    async def update(self, workflow_id: str, data: WorkflowUpdate) -> Workflow:
+        """Update workflow fields (name, dag_config, mode)."""
+        workflow = await self.get(workflow_id)
+        if data.name is not None:
+            workflow.name = data.name
+        if data.dag_config is not None:
+            workflow.dag_config = data.dag_config
+        if data.mode is not None:
+            workflow.mode = data.mode
+        workflow.updated_at = utcnow()
+        self.session.add(workflow)
+        await self.session.flush()
         return workflow
 
     async def start(self, workflow_id: str, task_description: str) -> Workflow:

@@ -58,11 +58,19 @@ export interface StartWorkflowPayload {
   task_description: string
 }
 
+export interface UpdateWorkflowPayload {
+  name?: string
+  dag_config?: DagConfig
+  mode?: 'auto' | 'manual'
+}
+
 export const workflowApi = {
   list: (projectId: string) => api.get<WorkflowListItem[]>(`/workflows/project/${projectId}`),
   get: (workflowId: string) => api.get<Workflow>(`/workflows/${workflowId}`),
   create: (projectId: string, data: CreateWorkflowPayload) =>
     api.post<Workflow>(`/workflows/project/${projectId}`, data),
+  update: (workflowId: string, data: UpdateWorkflowPayload) =>
+    api.put<Workflow>(`/workflows/${workflowId}`, data),
   start: (workflowId: string, data: StartWorkflowPayload) =>
     api.post<Workflow>(`/workflows/${workflowId}/start`, data),
   pause: (workflowId: string) => api.post<Workflow>(`/workflows/${workflowId}/pause`),

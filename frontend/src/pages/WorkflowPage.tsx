@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   ReactFlow,
@@ -12,6 +12,7 @@ import {
   type Connection,
   type Node,
   type Edge,
+  type NodeDragHandler,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import AgentNode from '@/components/workflow/AgentNode'
@@ -36,13 +37,51 @@ export default function WorkflowPage() {
   const [loading, setLoading] = useState(true)
   const [workflowId, setWorkflowId] = useState<string | null>(null)
   const [workflows, setWorkflows] = useState<WorkflowListItem[]>([])
+  const autoSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const nodesRef = useRef(nodes)
+  const edgesRef = useRef(edges)
+  const workflowIdRef = useRef(workflowId)
 
-  // Load agents and existing workflows on mount
+  nodesRef.current = nodes
+  edgesRef.current = edges
+  workflowIdRef.current = workflowId
+
   useEffect(() => {
     if (!projectId) return
     fetchAgents(projectId)
     loadWorkflows(projectId)
   }, [projectId, fetchAgents])
+
+  const buildDagConfig = useCallback((currentNodes: Node[], currentEdges: Edge[]): DagConfig => ({
+    nodes: currentNodes.map((n): DagNode => ({
+      id: n.id,
+      agent_id: (n.data as Record<string, unknown>).agentId as string,
+      step_type: (n.data as Record<string, unknown>).stepType as DagNode['step_type'],
+      label: (n.data as Record<string, unknown>).label as string,
+      position: { x: n.position.x, y: n.position.y },
+    })),
+    edges: currentEdges.map((e) => ({
+      from: e.source,
+      to: e.target,
+    })),
+  }), [])
+
+  const autoSave = useCallback(() => {
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current)
+    autoSaveTimer.current = setTimeout(async () => {
+      const wfId = workflowIdRef.current
+      const currentNodes = nodesRef.current
+      const currentEdges = edgesRef.current
+      if (!wfId || currentNodes.length === 0) return
+      try {
+        await workflowApi.update(wfId, {
+          dag_config: buildDagConfig(currentNodes, currentEdges),
+        })
+      } catch (e) {
+        console.error('Auto-save failed:', e)
+      }
+    }, 800)
+  }, [buildDagConfig])
 
   const loadWorkflows = async (pid: string) => {
     setLoading(true)
@@ -100,18 +139,32 @@ export default function WorkflowPage() {
   const handleDeleteNode = useCallback((nodeId: string) => {
     setNodes((nds) => nds.filter((n) => n.id !== nodeId))
     setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId))
-  }, [setNodes, setEdges])
+    setTimeout(() => autoSave(), 100)
+  }, [setNodes, setEdges, autoSave])
 
   const onConnect = useCallback(
-    (params: Connection) => setEdges((eds: Edge[]) => addEdge({ ...params, animated: true }, eds)),
-    [setEdges]
+    (params: Connection) => {
+      setEdges((eds: Edge[]) => addEdge({ ...params, animated: true }, eds))
+      setTimeout(() => autoSave(), 100)
+    },
+    [setEdges, autoSave]
   )
 
   const onReconnect = useCallback(
-    (oldEdge: Edge, newConnection: Connection) =>
-      setEdges((eds) => reconnectEdge(oldEdge, newConnection, eds)),
-    [setEdges]
+    (oldEdge: Edge, newConnection: Connection) => {
+      setEdges((eds) => reconnectEdge(oldEdge, newConnection, eds))
+      setTimeout(() => autoSave(), 100)
+    },
+    [setEdges, autoSave]
   )
+
+  const onNodeDragStop: NodeDragHandler = useCallback(() => {
+    autoSave()
+  }, [autoSave])
+
+  const onEdgesDelete = useCallback(() => {
+    setTimeout(() => autoSave(), 100)
+  }, [autoSave])
 
   const addAgentNode = (agentId: string, roleName: string, icon: string, stepType: string) => {
     const id = `node_${Date.now()}`
@@ -129,34 +182,28 @@ export default function WorkflowPage() {
       },
     }
     setNodes((nds: Node[]) => [...nds, newNode])
+    setTimeout(() => autoSave(), 100)
   }
-
-  const toDagConfig = (): DagConfig => ({
-    nodes: nodes.map((n): DagNode => ({
-      id: n.id,
-      agent_id: (n.data as Record<string, unknown>).agentId as string,
-      step_type: (n.data as Record<string, unknown>).stepType as DagNode['step_type'],
-      label: (n.data as Record<string, unknown>).label as string,
-      position: { x: n.position.x, y: n.position.y },
-    })),
-    edges: edges.map((e) => ({
-      from: e.source,
-      to: e.target,
-    })),
-  })
 
   const handleSave = async () => {
     if (!projectId || nodes.length === 0) return
     setSaving(true)
     try {
-      const res = await workflowApi.create(projectId, {
-        name: workflowName || '自定义工作流',
-        type: 'custom',
-        dag_config: toDagConfig(),
-        mode: 'manual',
-      })
-      setWorkflowId(res.data.id)
-      setWorkflows((prev) => [...prev, { id: res.data.id, name: res.data.name, type: res.data.type, status: res.data.status, mode: res.data.mode, created_at: res.data.created_at }])
+      if (workflowId) {
+        await workflowApi.update(workflowId, {
+          name: workflowName || '自定义工作流',
+          dag_config: buildDagConfig(nodes, edges),
+        })
+      } else {
+        const res = await workflowApi.create(projectId, {
+          name: workflowName || '自定义工作流',
+          type: 'custom',
+          dag_config: buildDagConfig(nodes, edges),
+          mode: 'manual',
+        })
+        setWorkflowId(res.data.id)
+        setWorkflows((prev) => [...prev, { id: res.data.id, name: res.data.name, type: res.data.type, status: res.data.status, mode: res.data.mode, created_at: res.data.created_at }])
+      }
     } catch (e) {
       console.error('Save workflow failed:', e)
     } finally {
@@ -257,6 +304,8 @@ export default function WorkflowPage() {
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
             onReconnect={onReconnect}
+            onNodeDragStop={onNodeDragStop}
+            onEdgesDelete={onEdgesDelete}
             nodeTypes={nodeTypes}
             defaultEdgeOptions={defaultEdgeOptions}
             deleteKeyCode="Delete"

@@ -14,6 +14,7 @@ from app.schemas.workflow import (
     WorkflowListOut,
     WorkflowOut,
     WorkflowStartRequest,
+    WorkflowUpdate,
 )
 from app.services.workflow_service import WorkflowService
 
@@ -67,6 +68,21 @@ async def get_workflow(
     service = WorkflowService(session)
     workflow = await service.get(workflow_id)
     await _verify_project(session, workflow.project_id, current_user.id)
+    return _to_out(workflow)
+
+
+@router.put("/{workflow_id}", response_model=WorkflowOut)
+async def update_workflow(
+    workflow_id: str,
+    data: WorkflowUpdate,
+    session: DBSession,
+    current_user: User = Depends(get_current_user),
+):
+    """Update workflow (name, dag_config, mode)."""
+    service = WorkflowService(session)
+    workflow = await service.get(workflow_id)
+    await _verify_project(session, workflow.project_id, current_user.id)
+    workflow = await service.update(workflow_id, data)
     return _to_out(workflow)
 
 
