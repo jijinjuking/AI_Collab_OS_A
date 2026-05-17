@@ -6,10 +6,11 @@ interface AgentNodeData {
   agentId: string
   stepType: string
   status: string
+  onDelete?: (nodeId: string) => void
 }
 
-export default function AgentNode({ data }: NodeProps) {
-  const { label, icon, stepType, status } = data as unknown as AgentNodeData
+export default function AgentNode({ id, data }: NodeProps) {
+  const { label, icon, stepType, status, onDelete } = data as unknown as AgentNodeData
 
   const stepColors: Record<string, string> = {
     execute: 'var(--accent)',
@@ -28,6 +29,15 @@ export default function AgentNode({ data }: NodeProps) {
   return (
     <div className="agent-node" style={{ borderColor: stepColors[stepType] || 'var(--border)' }}>
       <Handle type="target" position={Position.Left} />
+      <div
+        className="agent-node-delete"
+        onClick={(e) => {
+          e.stopPropagation()
+          onDelete?.(id)
+        }}
+      >
+        ×
+      </div>
       <div className="agent-node-header">
         <span className="agent-node-icon">{icon}</span>
         <span className="agent-node-label">{label as string}</span>

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
   ReactFlow,
@@ -6,6 +6,7 @@ import {
   Controls,
   MiniMap,
   addEdge,
+  reconnectEdge,
   useNodesState,
   useEdgesState,
   type Connection,
@@ -15,7 +16,7 @@ import {
 import '@xyflow/react/dist/style.css'
 import AgentNode from '@/components/workflow/AgentNode'
 import { useAgentStore } from '@/store/agent'
-import { workflowApi, type DagConfig, type DagNode } from '@/api/workflows'
+import { workflowApi, type DagConfig, type DagNode, type WorkflowListItem } from '@/api/workflows'
 
 const nodeTypes = { agent: AgentNode }
 
@@ -26,20 +27,92 @@ const defaultEdgeOptions = {
 
 export default function WorkflowPage() {
   const { id: projectId } = useParams<{ id: string }>()
-  const { agents } = useAgentStore()
+  const { agents, fetchAgents } = useAgentStore()
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
   const [workflowName, setWorkflowName] = useState('')
   const [taskDesc, setTaskDesc] = useState('')
   const [saving, setSaving] = useState(false)
+  const [loading, setLoading] = useState(true)
   const [workflowId, setWorkflowId] = useState<string | null>(null)
+  const [workflows, setWorkflows] = useState<WorkflowListItem[]>([])
+
+  // Load agents and existing workflows on mount
+  useEffect(() => {
+    if (!projectId) return
+    fetchAgents(projectId)
+    loadWorkflows(projectId)
+  }, [projectId, fetchAgents])
+
+  const loadWorkflows = async (pid: string) => {
+    setLoading(true)
+    try {
+      const res = await workflowApi.list(pid)
+      setWorkflows(res.data)
+      if (res.data.length > 0) {
+        await loadWorkflow(res.data[0].id)
+      }
+    } catch (e) {
+      console.error('Load workflows failed:', e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadWorkflow = async (wfId: string) => {
+    try {
+      const res = await workflowApi.get(wfId)
+      setWorkflowId(res.data.id)
+      setWorkflowName(res.data.name || '')
+
+      const { nodes: dagNodes, edges: dagEdges } = res.data.dag_config
+      const flowNodes: Node[] = dagNodes.map((n, i) => ({
+        id: n.id,
+        type: 'agent',
+        position: { x: 180 + i * 240, y: 100 + (i % 2) * 130 },
+        data: {
+          label: n.label,
+          icon: getStepIcon(n.step_type),
+          agentId: n.agent_id,
+          stepType: n.step_type,
+          status: 'pending',
+          onDelete: handleDeleteNode,
+        },
+      }))
+      const flowEdges: Edge[] = dagEdges.map((e, i) => ({
+        id: `edge_${i}_${e.from}_${e.to}`,
+        source: e.from,
+        target: e.to,
+        animated: true,
+      }))
+      setNodes(flowNodes)
+      setEdges(flowEdges)
+    } catch (e) {
+      console.error('Load workflow failed:', e)
+    }
+  }
+
+  const getStepIcon = (stepType: string) => {
+    const icons: Record<string, string> = { execute: '🤖', review: '🔍', discuss: '💬', assign: '📋' }
+    return icons[stepType] || '🤖'
+  }
+
+  const handleDeleteNode = useCallback((nodeId: string) => {
+    setNodes((nds) => nds.filter((n) => n.id !== nodeId))
+    setEdges((eds) => eds.filter((e) => e.source !== nodeId && e.target !== nodeId))
+  }, [setNodes, setEdges])
 
   const onConnect = useCallback(
     (params: Connection) => setEdges((eds: Edge[]) => addEdge({ ...params, animated: true }, eds)),
     [setEdges]
   )
 
-  // Add agent as a node to the canvas
+  const onReconnect = useCallback(
+    (oldEdge: Edge, newConnection: Connection) =>
+      setEdges((eds) => reconnectEdge(oldEdge, newConnection, eds)),
+    [setEdges]
+  )
+
   const addAgentNode = (agentId: string, roleName: string, icon: string, stepType: string) => {
     const id = `node_${Date.now()}`
     const newNode: Node = {
@@ -52,12 +125,12 @@ export default function WorkflowPage() {
         agentId,
         stepType,
         status: 'pending',
+        onDelete: handleDeleteNode,
       },
     }
     setNodes((nds: Node[]) => [...nds, newNode])
   }
 
-  // Convert React Flow state to DAG config
   const toDagConfig = (): DagConfig => ({
     nodes: nodes.map((n): DagNode => ({
       id: n.id,
@@ -82,6 +155,7 @@ export default function WorkflowPage() {
         mode: 'manual',
       })
       setWorkflowId(res.data.id)
+      setWorkflows((prev) => [...prev, { id: res.data.id, name: res.data.name, type: res.data.type, status: res.data.status, mode: res.data.mode, created_at: res.data.created_at }])
     } catch (e) {
       console.error('Save workflow failed:', e)
     } finally {
@@ -98,11 +172,30 @@ export default function WorkflowPage() {
     }
   }
 
+  const handleWorkflowSwitch = async (wfId: string) => {
+    await loadWorkflow(wfId)
+  }
+
+  if (loading) {
+    return <div className="workflow-page"><div className="workflow-loading">加载工作流...</div></div>
+  }
+
   return (
     <div className="workflow-page">
       <header className="workflow-header">
         <h1>⚡ 工作流编排</h1>
         <div className="workflow-actions">
+          {workflows.length > 1 && (
+            <select
+              className="workflow-select"
+              value={workflowId || ''}
+              onChange={(e) => handleWorkflowSwitch(e.target.value)}
+            >
+              {workflows.map((wf) => (
+                <option key={wf.id} value={wf.id}>{wf.name || '未命名'}</option>
+              ))}
+            </select>
+          )}
           <input
             className="workflow-name-input"
             placeholder="工作流名称"
@@ -129,10 +222,9 @@ export default function WorkflowPage() {
       </header>
 
       <div className="workflow-body">
-        {/* Agent palette */}
         <aside className="agent-palette">
           <h3>Agent 面板</h3>
-          <p className="palette-hint">点击添加到画布</p>
+          <p className="palette-hint">点击添加到画布，Delete 键删除连线</p>
           {agents.map((agent) => (
             <div
               key={agent.id}
@@ -153,24 +245,28 @@ export default function WorkflowPage() {
           </div>
         </aside>
 
-        {/* React Flow canvas */}
         <div className="workflow-canvas">
+          {nodes.length === 0 && (
+            <div className="canvas-hint">从左侧面板添加 Agent 节点，拖拽连线构建工作流</div>
+          )}
           <ReactFlow
             nodes={nodes}
             edges={edges}
             onNodesChange={onNodesChange}
             onEdgesChange={onEdgesChange}
             onConnect={onConnect}
+            onReconnect={onReconnect}
             nodeTypes={nodeTypes}
             defaultEdgeOptions={defaultEdgeOptions}
+            deleteKeyCode="Delete"
             fitView
             proOptions={{ hideAttribution: true }}
           >
-            <Background color="var(--border)" gap={20} />
+            <Background color="rgba(137, 180, 250, 0.08)" gap={24} />
             <Controls />
             <MiniMap
               nodeColor={() => 'var(--accent)'}
-              maskColor="rgba(0,0,0,0.5)"
+              maskColor="rgba(0,0,0,0.6)"
             />
           </ReactFlow>
         </div>
